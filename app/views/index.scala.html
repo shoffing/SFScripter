@@ -1,0 +1,17 @@
+@()(implicit request: play.api.mvc.RequestHeader)
+
+@main("SF Script Generator") {
+
+    <script>
+        $(function() {
+            var scriptSocket = new WebSocket("@routes.Application.wsSF().webSocketURL()");
+
+            scriptSocket.onmessage = function (event) {
+                $("#script").append(event.data);
+            };
+        });
+    </script>
+
+    <pre id="script"></pre>
+
+}
