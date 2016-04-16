@@ -43,9 +43,11 @@ object Markov {
 
   val wordCharacters = "'$0123456789abcdefghijklmnopqrstuvwxyz"
 
-  val inputText = scala.io.Source.fromFile(Play.application.getFile("resources/corpus_seinfeld_fix.txt"))
+  val inputText = scala.io.Source.fromURL(Play.application.resource("corpus_seinfeld.txt"))
     .getLines.mkString("\n")
     .replaceAll("[^\\x00-\\x7F]", "") // remove unicode stuff
+
+  println(">> Loaded seinfeld corpus.")
 
   val inputSeq = inputText.split(Array(' ', '\t')).flatMap(w => explode(w, c => wordCharacters.contains(c.toLower)))
 
@@ -63,6 +65,8 @@ object Markov {
     else
       graph(wordPair(0)).links = graph(wordPair(0)).links + (wordPair(1) -> Link(graph(wordPair(1)), 1))
   }
+
+  println(">> Initialized Markov chain graph.")
 
   // Initialize the current node as a random node in the graph
   var curNode = graph.values.toList(Random.nextInt(graph.size))

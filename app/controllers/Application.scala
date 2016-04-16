@@ -13,6 +13,7 @@ class Application @Inject()(ws: WSClient) extends Controller {
   }
 
   def wsSF = WebSocket.using[String] { request =>
+    println(">> Got websocket request...")
     (Iteratee.ignore[String], Application.sfOutEnumerator)
   }
 }
