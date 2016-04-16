@@ -6,12 +6,23 @@
         $(function() {
             var scriptSocket = new WebSocket("@routes.Application.wsSF().webSocketURL()");
 
+            var receivedFirstMessage = false;
+
             scriptSocket.onmessage = function (event) {
+                if(!receivedFirstMessage) {
+                    receivedFirstMessage = true;
+                    $("#script").empty();
+                }
+
                 $("#script").append(event.data);
             };
         });
     </script>
 
-    <pre id="script"></pre>
+    <a id="source" target="_blank" href="https://github.com/shoffing/SFScripter">Check out the source on GitHub</a>
+
+    <h1>Seinfeld Script Writer</h1>
+
+    <pre id="script">Loading...</pre>
 
 }

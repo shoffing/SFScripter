@@ -1,10 +1,6 @@
 package helpers
 
-import java.io.{File, PrintWriter}
-
 import play.Play
-import play.api.libs.json._
-
 import scala.util.Random
 
 object Markov {
@@ -47,7 +43,7 @@ object Markov {
 
   val wordCharacters = "'$0123456789abcdefghijklmnopqrstuvwxyz"
 
-  val inputText = scala.io.Source.fromFile(Play.application.getFile("resources/corpus_seinfeld.txt"))
+  val inputText = scala.io.Source.fromFile(Play.application.getFile("resources/corpus_seinfeld_fix.txt"))
     .getLines.mkString("\n")
     .replaceAll("[^\\x00-\\x7F]", "") // remove unicode stuff
 
@@ -68,41 +64,6 @@ object Markov {
       graph(wordPair(0)).links = graph(wordPair(0)).links + (wordPair(1) -> Link(graph(wordPair(1)), 1))
   }
 
-
-//  val linkCounts = graph.values.filter(_.label.forall(wordCharacters.contains(_))).map(node =>
-//    node.label -> node.links.size
-//  ).toList
-//
-//  linkCounts.sortBy(-_._2).foreach(n => println(s"${n._1} -> ${n._2}"))
-//
-//  val pw = new PrintWriter(new File("/Users/shoffing/seinfeld_node_link_counts.txt"))
-//  linkCounts.foreach(n => pw.write(s"${n._1}, ${n._2}"))
-//  pw.close()
-
-//  // convert the graph to JSON
-//  val graphJSON: JsValue = JsObject(Seq(
-//    "nodes" -> JsArray(
-//      graph.values.map(node =>
-//        JsObject(Seq(
-//          "label" -> JsString(node.label),
-//          "links" -> JsArray(
-//            node.links.values.map(link =>
-//              JsObject(Seq(
-//                "label" -> JsString(link.node.label),
-//                "weight" -> JsNumber(link.weight / node.links.values.map(_.weight).sum.toDouble)
-//              ))
-//            ).toSeq
-//          )
-//        ))
-//      ).toSeq
-//    )
-//  ))
-//
-//  // output the graph JSON to a text file
-//  val pw = new PrintWriter(new File("/Users/shoffing/graph_hamlet.json"))
-//  pw.write(Json.stringify(graphJSON))
-//  pw.close()
-
   // Initialize the current node as a random node in the graph
   var curNode = graph.values.toList(Random.nextInt(graph.size))
 
@@ -110,7 +71,13 @@ object Markov {
   def next: String = {
     var output = curNode.label
     val nextNode = curNode.next
-    if (nextNode.label.forall(c => wordCharacters.contains(c.toLower))) output += " "
+
+    val curNodeIsNewline = curNode.label == "\n"
+    val curNodeIsOpener = "([{".contains(curNode.label)
+    val nextNodeIsWord = nextNode.label.forall(c => wordCharacters.contains(c.toLower))
+    val bothAreSymbols = !curNode.label.forall(c => wordCharacters.contains(c.toLower)) && !nextNodeIsWord
+    val isEllipsis = curNode.label == "." && nextNode.label == "."
+    if ((!curNodeIsNewline && !curNodeIsOpener && nextNodeIsWord) || (bothAreSymbols && !isEllipsis)) output += " "
     curNode = nextNode
     output
   }
